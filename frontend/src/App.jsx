@@ -26,8 +26,6 @@ const App = () => {
     }
   }, [dispatch]);
 
-  console.log(user, isAuth, 'authh');
-
   return (
     <Router>
       <Header />
@@ -42,7 +40,7 @@ const App = () => {
           <Route path="/profile" element={<Profile />} />
         </Route>
        
-        <Route element={<ProtectedRoute  isAdmin={true} user={user} />}>
+        <Route element={<ProtectedRoute isAdmin={true} />}>
         <Route path="/admin" element={<Admin />} /> 
         </Route>
 

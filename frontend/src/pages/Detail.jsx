@@ -27,12 +27,14 @@ const Detail = () => {
   };
 
   const addBasket = () => {
+    const p = product?.product;
+    if (!p?._id) return;
     const data = {
-      id: product?.product?._id,
-      name: product?.product?.name,
-      image: product?.product?.images?.[0],
-      price: product?.product?.price,
-      quantity: quantity,
+      id: p._id,
+      name: p.name,
+      image: p.images?.[0],
+      price: p.price,
+      quantity,
     };
     dispatch(addToCard(data));
   };

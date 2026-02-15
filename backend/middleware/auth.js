@@ -3,6 +3,10 @@ import jwt from "jsonwebtoken";
 
 export const authenticationMid = async (req, res, next) => {
   try {
+    const secret = process.env.JWT_SECRET;
+    if (!secret || secret.trim() === "") {
+      return res.status(500).json({ message: "Sunucu yapılandırma hatası (JWT)" });
+    }
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -11,11 +15,11 @@ export const authenticationMid = async (req, res, next) => {
 
     const token = authHeader.split(" ")[1];
 
-    if (!token) {
-      return res.status(401).json({ message: "Token boş" });
+    if (!token || token === "undefined" || token === "null") {
+      return res.status(401).json({ message: "Token geçersiz" });
     }
 
-    const decodedData = jwt.verify(token, process.env.JWT_SECRET);
+    const decodedData = jwt.verify(token, secret);
     req.user = await User.findById(decodedData.id);
     next();
   } catch (error) {

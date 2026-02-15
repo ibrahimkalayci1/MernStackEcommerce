@@ -9,6 +9,11 @@ import { v2 as cloudinary } from "cloudinary";
 
 dotenv.config();
 
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET.trim() === "") {
+  console.error("HATA: .env dosyasında JWT_SECRET tanımlı değil veya boş. Örnek: JWT_SECRET=gizli_anahtar_en_az_32_karakter");
+  process.exit(1);
+}
+
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,

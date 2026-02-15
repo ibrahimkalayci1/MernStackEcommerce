@@ -7,24 +7,22 @@ import ReactPaginate from 'react-paginate';
 
 const Products = () => {
   const dispatch = useDispatch();
-  const { products, loading } = useSelector((state) => state.products);
+  const { products, loading, error } = useSelector((state) => state.products);
   const { keyword } = useSelector((state) => state.general);
   const [price, setPrice] = useState({ min: 0, max: 999999 });
   const [rating, setRating] = useState(0);
   const [category, setCategory] = useState('');
 
+  const itemsPerPage = 10;
   const [itemOffset, setItemOffset] = useState(0);
 
-  // 🔥 önce listeyi güvene al
   const productList = products?.products || [];
-
-  // sonra hesaplama
-  const endOffset = itemOffset + 1;
+  const endOffset = itemOffset + itemsPerPage;
   const currentItems = productList.slice(itemOffset, endOffset);
-  const pageCount = Math.ceil(productList.length / 1);
+  const pageCount = Math.ceil(productList.length / itemsPerPage);
 
   const handlePageClick = (event) => {
-    const newOffset = (event.selected * 1) % productList.length;
+    const newOffset = (event.selected * itemsPerPage) % productList.length;
     setItemOffset(newOffset);
   };
 
@@ -41,8 +39,11 @@ const Products = () => {
         <div>
           {loading ? (
             'Loading...'
+          ) : error ? (
+            <div className="text-red-600">Hata: {error}. Backend çalışıyor mu? (npm run dev, port 4000)</div>
           ) : (
             <div>
+              {productList.length === 0 && !loading && <p>Henüz ürün yok.</p>}
               {products?.products && (
                 <div className=" flex items-center justify-center gap-5 my-5 flex-wrap ">
                   {currentItems.map((product, i) => (

@@ -33,18 +33,25 @@ export const login = createAsyncThunk('login', async (data) => {
 });
 
 export const profile = createAsyncThunk(
-  'profile', 
-  async () => {
-  const token = localStorage.getItem('token');
-
-  const response = await fetch(`http://localhost:4000/me`, {
-    headers: {
-      authorization: `Bearer ${token}`,
-    },
-  });
-
-  return await response.json();
-});
+  'profile',
+  async (_, { rejectWithValue }) => {
+    const token = localStorage.getItem('token');
+    if (!token || token === 'undefined' || token === 'null') {
+      localStorage.removeItem('token');
+      return rejectWithValue('Token yok');
+    }
+    const response = await fetch(`http://localhost:4000/me`, {
+      headers: { authorization: `Bearer ${token}` },
+    });
+    const data = await response.json();
+    if (response.status === 401) {
+      localStorage.removeItem('token');
+      return rejectWithValue(data?.message || 'Geçersiz token');
+    }
+    if (!response.ok) return rejectWithValue(data);
+    return data;
+  }
+);
 
 export const forgotPassword = createAsyncThunk(
   'user/forgotPassword',
@@ -148,8 +155,9 @@ const userSlice = createSlice({
       state.isAuth = false;
     });
     builder.addCase(register.fulfilled, (state, action) => {
-      ((state.loading = false), (state.isAuth = true));
-      state.user = action.payload;
+      state.loading = false;
+      state.isAuth = true;
+      state.user = { user: action.payload.newUser ?? action.payload.user };
     });
 
     builder.addCase(login.pending, (state, action) => {
@@ -157,8 +165,9 @@ const userSlice = createSlice({
       state.isAuth = false;
     });
     builder.addCase(login.fulfilled, (state, action) => {
-      ((state.loading = false), (state.isAuth = true));
-      state.user = action.payload;
+      state.loading = false;
+      state.isAuth = true;
+      state.user = { user: action.payload.user };
     });
 
     builder.addCase(profile.pending, (state, action) => {
@@ -166,12 +175,15 @@ const userSlice = createSlice({
       state.isAuth = false;
     });
     builder.addCase(profile.fulfilled, (state, action) => {
-      ((state.loading = false), (state.isAuth = true));
+      state.loading = false;
+      state.isAuth = true;
       state.user = action.payload;
     });
-    builder.addCase(profile.rejected, (state, action) => {
-      ((state.loading = false), (state.isAuth = false));
+    builder.addCase(profile.rejected, (state) => {
+      state.loading = false;
+      state.isAuth = false;
       state.user = {};
+      localStorage.removeItem('token');
     });
 
     builder.addCase(forgotPassword.pending, (state, action) => {

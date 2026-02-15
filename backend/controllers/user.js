@@ -9,14 +9,18 @@ import nodemailer from "nodemailer";
 
 
 export const register = async (req, res) => {
+    const avatarSource = typeof req.body.avatar === "string"
+      ? req.body.avatar
+      : req.body.avatar?.url ?? req.body.avatar?.base64 ?? req.body.avatar;
+    if (!avatarSource || typeof avatarSource !== "string") {
+      return res.status(400).json({ message: "Avatar (resim) gerekli" });
+    }
+    const avatar = await cloudinary.uploader.upload(avatarSource, {
+      folder: "avatars",
+      width: 130,
+      crop: "scale",
+    });
 
-    const avatar = await cloudinary.uploader.upload(req.body.avatar, 
-      {folder:"avatars",
-        width:130,
-        crop:"scale"
-      }
-     )
-  
     const { name, email, password, role } = req.body;
   
   

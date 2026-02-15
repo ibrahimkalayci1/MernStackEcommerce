@@ -5,10 +5,12 @@ import ProductCard from '../components/ProductCard';
 import banner from '../assets/images/banner.webp';
 const Home = () => {
   const dispatch = useDispatch();
-  const { products, loading } = useSelector((state) => state.products);
+  const { products, loading, error } = useSelector((state) => state.products);
   useEffect(() => {
     dispatch(getProducts({ keyword: '' }));
   }, [dispatch]);
+
+  const productList = products?.products || [];
 
   return (
     <>
@@ -18,17 +20,18 @@ const Home = () => {
 
       {loading ? (
         'Loading...'
+      ) : error ? (
+        <div className="text-red-600">Hata: {error}. Backend çalışıyor mu? (port 4000)</div>
       ) : (
         <div>
-          {
-          products?.products && (
+          {productList.length === 0 && <p>Henüz ürün yok.</p>}
+          {productList.length > 0 && (
             <div className=" flex items-center justify-center gap-5 my-5 flex-wrap ">
-              {products?.products?.map((product, i) => (
+              {productList.map((product, i) => (
                 <ProductCard product={product} key={i} />
               ))}
             </div>
-          )
-          }
+          )}
         </div>
       )}
     </>

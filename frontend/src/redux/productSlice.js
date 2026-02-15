@@ -5,6 +5,7 @@ const initialState = {
   adminProducts: [],
   product: {},
   loading: false,
+  error: null,
 };
 
 export const getProducts = createAsyncThunk('products', async (params = {}) => {
@@ -118,7 +119,13 @@ const productSlice = createSlice({
       state.loading = true;
     });
     builder.addCase(getProducts.fulfilled, (state, action) => {
-      ((state.loading = false), (state.products = action.payload));
+      state.loading = false;
+      state.products = action.payload;
+      state.error = null;
+    });
+    builder.addCase(getProducts.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.error?.message || 'Ürünler yüklenemedi';
     });
 
     builder.addCase(getProductDetail.pending, (state, action) => {
